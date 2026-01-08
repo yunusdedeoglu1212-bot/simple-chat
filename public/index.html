@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Mini Chat</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    height: 100vh;
+    background: #0f172a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: system-ui;
+}
+
+.chat {
+    width: 380px;
+    height: 520px;
+    background: #020617;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,.6);
+}
+
+.header {
+    padding: 14px;
+    text-align: center;
+    color: #e5e7eb;
+    font-weight: 600;
+    border-bottom: 1px solid #1e293b;
+}
+
+.messages {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.msg {
+    max-width: 75%;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.me {
+    align-self: flex-end;
+    background: #2563eb;
+    color: white;
+}
+
+.other {
+    align-self: flex-start;
+    background: #1e293b;
+    color: #e5e7eb;
+}
+
+.time {
+    display: block;
+    font-size: 11px;
+    opacity: 0.6;
+    margin-top: 2px;
+}
+
+.input-area {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    border-top: 1px solid #1e293b;
+}
+
+input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    background: #020617;
+    color: #e5e7eb;
+}
+
+button {
+    padding: 0 16px;
+    border-radius: 8px;
+    border: none;
+    background: #2563eb;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat">
+    <div class="header">Mini Chat</div>
+    <div class="messages" id="messages"></div>
+
+    <div class="input-area">
+        <input id="input" placeholder="Mesaj yaz...">
+        <button id="send">Gönder</button>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+const messages = document.getElementById("messages");
+const input = document.getElementById("input");
+const sendBtn = document.getElementById("send");
+
+const username = prompt("Kullanıcı adın:");
+socket.emit("join", username);
+
+function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+
+    socket.emit("message", text);
+    input.value = "";
+}
+
+sendBtn.onclick = sendMessage;
+
+input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sendMessage();
+});
+
+socket.on("message", (data) => {
+    const div = document.createElement("div");
+    div.classList.add("msg");
+
+    div.classList.add(
+        data.user === username ? "me" : "other"
+    );
+
+    div.innerHTML = `
+        <strong>${data.user}</strong><br>
+        ${data.text}
+        <span class="time">${data.time}</span>
+    `;
+
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+});
+</script>
+
+</body>
+</html>
