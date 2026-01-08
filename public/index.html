@@ -134,6 +134,26 @@ sendBtn.onclick = sendMessage;
 input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") sendMessage();
 });
+socket.on("history", (oldMessages) => {
+    oldMessages.forEach((data) => {
+        const div = document.createElement("div");
+        div.classList.add("msg");
+
+        div.classList.add(
+            data.user === username ? "me" : "other"
+        );
+
+        div.innerHTML = `
+            <strong>${data.user}</strong><br>
+            ${data.text}
+            <span class="time">${data.time}</span>
+        `;
+
+        messages.appendChild(div);
+    });
+
+    messages.scrollTop = messages.scrollHeight;
+});
 
 socket.on("message", (data) => {
     const div = document.createElement("div");
